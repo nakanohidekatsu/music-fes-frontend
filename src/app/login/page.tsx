@@ -8,7 +8,7 @@ import type { TokenResponse } from '@/types';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const res = await api.post<TokenResponse>('/auth/login', { email, password });
+      const res = await api.post<TokenResponse>('/auth/login', { username, password });
       setToken(res.access_token);
       router.push('/festivals');
     } catch (err) {
@@ -40,11 +40,11 @@ export default function LoginPage() {
         </h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">メールアドレス</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">ユーザーID</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none"
             />

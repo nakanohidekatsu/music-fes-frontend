@@ -9,6 +9,17 @@ import { Spinner, ErrorMessage } from '@/components/ui/Spinner';
 import type { ApplicationStatus, MusicFestival, ParticipationStatus, ResultStatus } from '@/types';
 
 interface EditForm {
+  // 基本情報
+  event_name: string;
+  event_date: string;
+  prefecture: string;
+  city: string;
+  application_start_date: string;
+  application_deadline: string;
+  result_announcement_date: string;
+  orientation_date: string;
+  homepage_url: string;
+  // 参加管理
   application_status: ApplicationStatus;
   result_status: ResultStatus;
   participation_planned_date: string;
@@ -32,6 +43,15 @@ export default function FestivalDetailPage() {
       .then((data) => {
         setFestival(data);
         setForm({
+          event_name: data.event_name,
+          event_date: data.event_date,
+          prefecture: data.prefecture ?? '',
+          city: data.city ?? '',
+          application_start_date: data.application_start_date ?? '',
+          application_deadline: data.application_deadline ?? '',
+          result_announcement_date: data.result_announcement_date ?? '',
+          orientation_date: data.orientation_date ?? '',
+          homepage_url: data.homepage_url ?? '',
           application_status: data.application_status,
           result_status: data.result_status,
           participation_planned_date: data.participation_planned_date ?? '',
@@ -55,6 +75,15 @@ export default function FestivalDetailPage() {
     setSaveError('');
     try {
       await api.put<MusicFestival>(`/festivals/${id}`, {
+        event_name: form.event_name,
+        event_date: form.event_date,
+        prefecture: form.prefecture || null,
+        city: form.city || null,
+        application_start_date: form.application_start_date || null,
+        application_deadline: form.application_deadline || null,
+        result_announcement_date: form.result_announcement_date || null,
+        orientation_date: form.orientation_date || null,
+        homepage_url: form.homepage_url || null,
         application_status: form.application_status,
         result_status: form.result_status,
         participation_planned_date: form.participation_planned_date || null,
@@ -103,40 +132,66 @@ export default function FestivalDetailPage() {
         }
       />
 
-      {/* 基本情報（読み取り専用） */}
+      {/* 基本情報（編集可能） */}
       <section className="mb-6 rounded-lg border border-gray-200 bg-white p-6">
         <h2 className="mb-4 text-sm font-semibold text-gray-700">基本情報</h2>
-        <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-          <InfoRow label="開催日" value={festival.event_date} />
-          <InfoRow label="都道府県" value={festival.prefecture} />
-          <InfoRow label="市町村" value={festival.city} />
-          <InfoRow label="募集開始日" value={festival.application_start_date} />
-          <InfoRow label="応募期限" value={festival.application_deadline} />
-          <InfoRow label="合格発表日" value={festival.result_announcement_date} />
-          <InfoRow label="説明会予定日" value={festival.orientation_date} />
-          {festival.homepage_url && (
-            <div className="sm:col-span-2">
-              <dt className="text-gray-500">ホームページ</dt>
-              <dd>
-                <a
-                  href={festival.homepage_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sky-600 hover:underline"
-                >
-                  {festival.homepage_url}
-                </a>
-              </dd>
-            </div>
-          )}
-        </dl>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <TextField
+              label="イベント名"
+              value={form.event_name}
+              onChange={(v) => setForm({ ...form, event_name: v })}
+            />
+          </div>
+          <DateField
+            label="開催日"
+            value={form.event_date}
+            onChange={(v) => setForm({ ...form, event_date: v })}
+          />
+          <TextField
+            label="都道府県"
+            value={form.prefecture}
+            onChange={(v) => setForm({ ...form, prefecture: v })}
+          />
+          <TextField
+            label="市町村"
+            value={form.city}
+            onChange={(v) => setForm({ ...form, city: v })}
+          />
+          <DateField
+            label="募集開始日"
+            value={form.application_start_date}
+            onChange={(v) => setForm({ ...form, application_start_date: v })}
+          />
+          <DateField
+            label="応募期限"
+            value={form.application_deadline}
+            onChange={(v) => setForm({ ...form, application_deadline: v })}
+          />
+          <DateField
+            label="合格発表日"
+            value={form.result_announcement_date}
+            onChange={(v) => setForm({ ...form, result_announcement_date: v })}
+          />
+          <DateField
+            label="説明会予定日"
+            value={form.orientation_date}
+            onChange={(v) => setForm({ ...form, orientation_date: v })}
+          />
+          <div className="sm:col-span-2">
+            <TextField
+              label="ホームページ"
+              value={form.homepage_url}
+              onChange={(v) => setForm({ ...form, homepage_url: v })}
+            />
+          </div>
+        </div>
       </section>
 
       {/* 参加管理（編集可能） */}
       <section className="rounded-lg border border-gray-200 bg-white p-6">
         <h2 className="mb-4 text-sm font-semibold text-gray-700">参加管理</h2>
 
-        {/* 現在の状態サマリ */}
         <div className="mb-5 flex flex-wrap gap-2">
           <Badge value={form.application_status} />
           <Badge value={form.result_status} />
@@ -156,15 +211,11 @@ export default function FestivalDetailPage() {
             options={['未設定', '合格', '不合格', '保留']}
             onChange={(v) => setForm({ ...form, result_status: v as ResultStatus })}
           />
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">参加予定日</label>
-            <input
-              type="date"
-              value={form.participation_planned_date}
-              onChange={(e) => setForm({ ...form, participation_planned_date: e.target.value })}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none"
-            />
-          </div>
+          <DateField
+            label="参加予定日"
+            value={form.participation_planned_date}
+            onChange={(v) => setForm({ ...form, participation_planned_date: v })}
+          />
           <SelectField
             label="参加可否"
             value={form.participation_status}
@@ -236,11 +287,46 @@ export default function FestivalDetailPage() {
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string | null | undefined }) {
+function TextField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
   return (
     <div>
-      <dt className="text-xs text-gray-500">{label}</dt>
-      <dd className="mt-0.5 font-medium text-gray-800">{value ?? '—'}</dd>
+      <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none"
+      />
+    </div>
+  );
+}
+
+function DateField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
+      <input
+        type="date"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none"
+      />
     </div>
   );
 }

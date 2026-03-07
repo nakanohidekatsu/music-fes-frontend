@@ -155,7 +155,7 @@ export default function ManagedPage() {
                   className="cursor-pointer hover:bg-blue-50"
                   onClick={() => router.push(`/festivals/${f.id}`)}
                 >
-                  <td className="px-4 py-3 font-medium">{f.event_name}</td>
+                  <td className="px-4 py-3 text-gray-600">{f.event_name}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-gray-600">{f.event_date}</td>
                   <td className="px-4 py-3 text-gray-600">{f.prefecture ?? '—'}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-gray-600">

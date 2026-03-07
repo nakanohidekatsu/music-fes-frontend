@@ -303,7 +303,7 @@ function TextField({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none"
+        className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-600 focus:border-sky-400 focus:outline-none"
       />
     </div>
   );
@@ -325,7 +325,7 @@ function DateField({
         type="date"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none"
+        className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-600 focus:border-sky-400 focus:outline-none"
       />
     </div>
   );
@@ -348,7 +348,7 @@ function SelectField({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none"
+        className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-600 focus:border-sky-400 focus:outline-none"
       >
         {options.map((o) => (
           <option key={o}>{o}</option>

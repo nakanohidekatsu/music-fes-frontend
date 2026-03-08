@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: '音楽フェス募集管理システム',
+  title: 'Music Fes!',
   description: '音楽フェスの参加者募集情報を一元管理するシステム',
 };
 

@@ -36,7 +36,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-orange-100">
       <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
         <h1 className="mb-6 text-center text-xl font-semibold text-gray-800">
-          音楽フェス募集管理システム
+          Music Fes!
         </h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>

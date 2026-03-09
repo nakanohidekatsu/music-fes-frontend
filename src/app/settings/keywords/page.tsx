@@ -19,6 +19,7 @@ export default function KeywordsPage() {
   const [inputError, setInputError] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [fetchFailed, setFetchFailed] = useState(false);
   const [pageError, setPageError] = useState('');
 
   useEffect(() => {
@@ -30,6 +31,7 @@ export default function KeywordsPage() {
           router.replace('/login');
         } else {
           setPageError('データの取得に失敗しました');
+          setFetchFailed(true);
         }
       })
       .finally(() => setLoading(false));
@@ -94,7 +96,7 @@ export default function KeywordsPage() {
 
         {loading ? (
           <Spinner />
-        ) : (
+        ) : !fetchFailed ? (
           <ul className="mb-6 flex flex-col gap-2">
             {keywords.length === 0 ? (
               <li className="text-sm text-gray-400">
@@ -133,7 +135,7 @@ export default function KeywordsPage() {
               ))
             )}
           </ul>
-        )}
+        ) : null}
 
         <form onSubmit={handleAdd} noValidate>
           <div className="flex gap-2">

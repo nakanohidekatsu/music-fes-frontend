@@ -10,6 +10,34 @@ import type { FestivalPageResponse, MusicFestival } from '@/types';
 
 const LIMIT = 50;
 
+type SortKey = 'created_at' | 'event_date';
+type Order = 'asc' | 'desc';
+
+function SortTh({
+  label,
+  col,
+  currentSort,
+  currentOrder,
+  onSort,
+}: {
+  label: string;
+  col: SortKey;
+  currentSort: SortKey;
+  currentOrder: Order;
+  onSort: (col: SortKey) => void;
+}) {
+  const active = currentSort === col;
+  return (
+    <th
+      className="cursor-pointer select-none px-4 py-3 text-left hover:text-gray-700"
+      onClick={() => onSort(col)}
+    >
+      {label}
+      {active && <span className="ml-1">{currentOrder === 'asc' ? '↑' : '↓'}</span>}
+    </th>
+  );
+}
+
 interface CollectResponse {
   started_at: string;
   finished_at: string;
@@ -23,6 +51,8 @@ export default function DiscoveredPage() {
   const [items, setItems] = useState<MusicFestival[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<SortKey>('event_date');
+  const [order, setOrder] = useState<Order>('asc');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [collecting, setCollecting] = useState(false);
@@ -32,7 +62,7 @@ export default function DiscoveredPage() {
     let cancelled = false;
     api
       .get<FestivalPageResponse>(
-        `/festivals/discovered?page=${page}&limit=${LIMIT}&sort_by=event_date&order=asc`,
+        `/festivals/discovered?page=${page}&limit=${LIMIT}&sort_by=${sortBy}&order=${order}`,
       )
       .then((res) => {
         if (!cancelled) {
@@ -54,7 +84,7 @@ export default function DiscoveredPage() {
     return () => {
       cancelled = true;
     };
-  }, [page, router]);
+  }, [page, sortBy, order, router]);
 
   async function handleCollect() {
     setCollecting(true);
@@ -67,7 +97,7 @@ export default function DiscoveredPage() {
       setPage(1);
       setLoading(true);
       const res = await api.get<FestivalPageResponse>(
-        `/festivals/discovered?page=1&limit=${LIMIT}&sort_by=event_date&order=asc`,
+        `/festivals/discovered?page=1&limit=${LIMIT}&sort_by=${sortBy}&order=${order}`,
       );
       setItems(res.items);
       setTotal(res.total);
@@ -92,6 +122,18 @@ export default function DiscoveredPage() {
     } catch {
       setError('更新に失敗しました');
     }
+  }
+
+  function handleSort(key: SortKey) {
+    setLoading(true);
+    setError('');
+    if (sortBy === key) {
+      setOrder((o) => (o === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortBy(key);
+      setOrder('asc');
+    }
+    setPage(1);
   }
 
   function goToPage(next: number) {
@@ -196,8 +238,8 @@ export default function DiscoveredPage() {
           <thead className="border-b border-gray-200 bg-gray-50 text-xs text-gray-500">
             <tr>
               <th className="px-4 py-3 text-left">イベント名</th>
-              <th className="px-4 py-3 text-left">収集日</th>
-              <th className="px-4 py-3 text-left">開催日</th>
+              <SortTh label="収集日" col="created_at" currentSort={sortBy} currentOrder={order} onSort={handleSort} />
+              <SortTh label="開催日" col="event_date" currentSort={sortBy} currentOrder={order} onSort={handleSort} />
               <th className="px-4 py-3 text-left">都道府県</th>
               <th className="px-4 py-3 text-left">市町村</th>
               <th className="px-4 py-3 text-left">応募期限</th>

@@ -196,6 +196,7 @@ export default function DiscoveredPage() {
           <thead className="border-b border-gray-200 bg-gray-50 text-xs text-gray-500">
             <tr>
               <th className="px-4 py-3 text-left">イベント名</th>
+              <th className="px-4 py-3 text-left">収集日</th>
               <th className="px-4 py-3 text-left">開催日</th>
               <th className="px-4 py-3 text-left">都道府県</th>
               <th className="px-4 py-3 text-left">市町村</th>
@@ -206,13 +207,13 @@ export default function DiscoveredPage() {
           <tbody className="divide-y divide-gray-100">
             {loading ? (
               <tr>
-                <td colSpan={6} className="px-4 py-6">
+                <td colSpan={7} className="px-4 py-6">
                   <Spinner />
                 </td>
               </tr>
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
                   データがありません
                 </td>
               </tr>
@@ -232,6 +233,9 @@ export default function DiscoveredPage() {
                     ) : (
                       f.event_name
                     )}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-gray-600">
+                    {f.created_at.slice(0, 10)}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-gray-600">{f.event_date}</td>
                   <td className="px-4 py-3 text-gray-600">{f.prefecture ?? '—'}</td>

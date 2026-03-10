@@ -7,7 +7,7 @@ import { removeToken } from '@/lib/auth';
 const navItems = [
   {
     href: '/festivals/managed',
-    label: '管理対象一覧',
+    label: '要チェック！',
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"

@@ -99,7 +99,7 @@ export default function ManagedPage() {
 
   return (
     <div>
-      <PageHeader title="管理対象フェス一覧" count={total} />
+      <PageHeader title="要チェック！" count={total} />
 
       {error && <ErrorMessage message={error} />}
 
@@ -145,7 +145,7 @@ export default function ManagedPage() {
             ) : items.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
-                  管理対象のフェスがありません
+                  要チェック！のフェスがありません
                 </td>
               </tr>
             ) : (

@@ -155,7 +155,21 @@ export default function ManagedPage() {
                   className="cursor-pointer hover:bg-blue-50"
                   onClick={() => router.push(`/festivals/${f.id}`)}
                 >
-                  <td className="px-4 py-3 text-gray-600">{f.event_name}</td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {f.homepage_url ? (
+                      <a
+                        href={f.homepage_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-sky-600 hover:underline"
+                      >
+                        {f.event_name}
+                      </a>
+                    ) : (
+                      f.event_name
+                    )}
+                  </td>
                   <td className="whitespace-nowrap px-4 py-3 text-gray-600">{f.event_date}</td>
                   <td className="px-4 py-3 text-gray-600">{f.prefecture ?? '—'}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-gray-600">

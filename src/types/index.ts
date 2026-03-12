@@ -20,6 +20,7 @@ export interface MusicFestival {
   participation_planned_date: string | null;
   participation_status: ParticipationStatus;
   participated: boolean;
+  notes: string | null;
   source_type: SourceType;
   created_by: string | null;
   created_at: string;

@@ -25,6 +25,8 @@ interface EditForm {
   participation_planned_date: string;
   participation_status: ParticipationStatus;
   participated: boolean;
+  // 備考
+  notes: string;
 }
 
 export default function FestivalDetailPage() {
@@ -57,6 +59,7 @@ export default function FestivalDetailPage() {
           participation_planned_date: data.participation_planned_date ?? '',
           participation_status: data.participation_status,
           participated: data.participated,
+          notes: data.notes ?? '',
         });
       })
       .catch((err) => {
@@ -89,6 +92,7 @@ export default function FestivalDetailPage() {
         participation_planned_date: form.participation_planned_date || null,
         participation_status: form.participation_status,
         participated: form.participated,
+        notes: form.notes || null,
       });
       router.push('/festivals/managed');
     } catch (err) {
@@ -233,6 +237,16 @@ export default function FestivalDetailPage() {
           />
           <span className="font-medium text-gray-700">参加済み</span>
         </label>
+
+        <div className="mt-5">
+          <label className="mb-1 block text-sm font-medium text-gray-700">備考</label>
+          <textarea
+            value={form.notes}
+            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            rows={4}
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-600 focus:border-sky-400 focus:outline-none"
+          />
+        </div>
 
         {saveError && <ErrorMessage message={saveError} />}
 

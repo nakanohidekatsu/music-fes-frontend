@@ -122,6 +122,7 @@ export default function ManagedPage() {
                 onSort={handleSort}
               />
               <th className="px-4 py-3 text-left">都道府県</th>
+              <th className="px-4 py-3 text-left">募集開始日</th>
               <SortTh
                 label="応募期限"
                 col="application_deadline"
@@ -138,13 +139,13 @@ export default function ManagedPage() {
           <tbody className="divide-y divide-gray-100">
             {loading ? (
               <tr>
-                <td colSpan={8} className="px-4 py-6">
+                <td colSpan={9} className="px-4 py-6">
                   <Spinner />
                 </td>
               </tr>
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={9} className="px-4 py-8 text-center text-gray-400">
                   要チェック！のフェスがありません
                 </td>
               </tr>
@@ -172,6 +173,9 @@ export default function ManagedPage() {
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-gray-600">{f.event_date}</td>
                   <td className="px-4 py-3 text-gray-600">{f.prefecture ?? '—'}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-gray-600">
+                    {f.application_start_date ?? '—'}
+                  </td>
                   <td className="whitespace-nowrap px-4 py-3 text-gray-600">
                     {f.application_deadline ?? '—'}
                   </td>

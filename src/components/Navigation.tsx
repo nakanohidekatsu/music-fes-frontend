@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { removeToken } from '@/lib/auth';
+import { useViewMode } from '@/lib/useViewMode';
 
 const navItems = [
   {
@@ -105,6 +106,7 @@ const navItems = [
 export default function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
+  const { isMobile, toggle } = useViewMode();
 
   function handleLogout() {
     removeToken();
@@ -152,8 +154,32 @@ export default function Navigation() {
             </Link>
           ))}
           <button
+            onClick={toggle}
+            title={isMobile ? 'PC表示に切り替え' : 'スマホ表示に切り替え'}
+            className="ml-2 flex items-center gap-1 rounded border border-gray-200 px-2 py-1.5 text-xs text-gray-500 hover:bg-gray-100"
+          >
+            {isMobile ? (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2" />
+                  <line x1="8" y1="21" x2="16" y2="21" />
+                  <line x1="12" y1="17" x2="12" y2="21" />
+                </svg>
+                PC
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                  <line x1="12" y1="18" x2="12.01" y2="18" />
+                </svg>
+                スマホ
+              </>
+            )}
+          </button>
+          <button
             onClick={handleLogout}
-            className="ml-4 flex items-center gap-1.5 rounded px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100"
+            className="ml-2 flex items-center gap-1.5 rounded px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

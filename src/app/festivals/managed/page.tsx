@@ -101,7 +101,7 @@ export default function ManagedPage() {
 
   return (
     <div>
-      <PageHeader title="要チェック！" count={total} />
+      <PageHeader title="Scope" count={total} />
 
       {error && <ErrorMessage message={error} />}
 
@@ -111,7 +111,7 @@ export default function ManagedPage() {
           {loading ? (
             <Spinner />
           ) : items.length === 0 ? (
-            <p className="py-8 text-center text-gray-400">要チェック！のフェスがありません</p>
+            <p className="py-8 text-center text-gray-400">Scopeのフェスがありません</p>
           ) : (
             items.map((f) => (
               <div
@@ -171,7 +171,7 @@ export default function ManagedPage() {
               {loading ? (
                 <tr><td colSpan={9} className="px-4 py-6"><Spinner /></td></tr>
               ) : items.length === 0 ? (
-                <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400">要チェック！のフェスがありません</td></tr>
+                <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400">Scopeのフェスがありません</td></tr>
               ) : (
                 items.map((f) => (
                   <tr key={f.id} className="cursor-pointer hover:bg-blue-50" onClick={() => router.push(`/festivals/${f.id}`)}>

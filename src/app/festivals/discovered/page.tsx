@@ -149,7 +149,7 @@ export default function DiscoveredPage() {
   return (
     <div>
       <PageHeader
-        title="収集済みフェス一覧"
+        title="Crawling"
         count={total}
         actions={
           <div className="flex items-center gap-2">

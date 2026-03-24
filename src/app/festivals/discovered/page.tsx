@@ -59,13 +59,23 @@ export default function DiscoveredPage() {
   const [collecting, setCollecting] = useState(false);
   const [collectResult, setCollectResult] = useState<CollectResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const { isMobile } = useViewMode();
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
     let cancelled = false;
+    const searchParam = debouncedSearch ? `&search=${encodeURIComponent(debouncedSearch)}` : '';
     api
       .get<FestivalPageResponse>(
-        `/festivals/discovered?page=${page}&limit=${LIMIT}&sort_by=${sortBy}&order=${order}`,
+        `/festivals/discovered?page=${page}&limit=${LIMIT}&sort_by=${sortBy}&order=${order}${searchParam}`,
       )
       .then((res) => {
         if (!cancelled) {
@@ -87,7 +97,7 @@ export default function DiscoveredPage() {
     return () => {
       cancelled = true;
     };
-  }, [page, sortBy, order, router]);
+  }, [page, sortBy, order, debouncedSearch, router]);
 
   async function handleCollect() {
     setCollecting(true);
@@ -146,17 +156,6 @@ export default function DiscoveredPage() {
   }
 
   const totalPages = Math.ceil(total / LIMIT);
-
-  const filteredItems = searchQuery.trim()
-    ? items.filter((f) => {
-        const q = searchQuery.trim().toLowerCase();
-        return (
-          f.event_name.toLowerCase().includes(q) ||
-          (f.prefecture ?? '').toLowerCase().includes(q) ||
-          (f.city ?? '').toLowerCase().includes(q)
-        );
-      })
-    : items;
 
   return (
     <div>
@@ -262,10 +261,10 @@ export default function DiscoveredPage() {
         <div className="flex flex-col gap-3">
           {loading ? (
             <Spinner />
-          ) : filteredItems.length === 0 ? (
+          ) : items.length === 0 ? (
             <p className="py-8 text-center text-gray-400">データがありません</p>
           ) : (
-            filteredItems.map((f) => (
+            items.map((f) => (
               <div key={f.id} className="rounded-lg border border-gray-200 bg-white p-4">
                 <div className="mb-2 text-base font-medium">
                   {f.homepage_url ? (
@@ -318,10 +317,10 @@ export default function DiscoveredPage() {
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr><td colSpan={7} className="px-4 py-6"><Spinner /></td></tr>
-              ) : filteredItems.length === 0 ? (
+              ) : items.length === 0 ? (
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">データがありません</td></tr>
               ) : (
-                filteredItems.map((f) => (
+                items.map((f) => (
                   <tr key={f.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium">
                       {f.homepage_url ? (

@@ -58,6 +58,7 @@ export default function DiscoveredPage() {
   const [error, setError] = useState('');
   const [collecting, setCollecting] = useState(false);
   const [collectResult, setCollectResult] = useState<CollectResponse | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const { isMobile } = useViewMode();
 
   useEffect(() => {
@@ -146,6 +147,17 @@ export default function DiscoveredPage() {
 
   const totalPages = Math.ceil(total / LIMIT);
 
+  const filteredItems = searchQuery.trim()
+    ? items.filter((f) => {
+        const q = searchQuery.trim().toLowerCase();
+        return (
+          f.event_name.toLowerCase().includes(q) ||
+          (f.prefecture ?? '').toLowerCase().includes(q) ||
+          (f.city ?? '').toLowerCase().includes(q)
+        );
+      })
+    : items;
+
   return (
     <div>
       <PageHeader
@@ -221,6 +233,16 @@ export default function DiscoveredPage() {
         }
       />
 
+      <div className="mb-4">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="イベント名・都道府県・市町村で検索"
+          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none"
+        />
+      </div>
+
       {error && <ErrorMessage message={error} />}
 
       {collectResult && (
@@ -240,10 +262,10 @@ export default function DiscoveredPage() {
         <div className="flex flex-col gap-3">
           {loading ? (
             <Spinner />
-          ) : items.length === 0 ? (
+          ) : filteredItems.length === 0 ? (
             <p className="py-8 text-center text-gray-400">データがありません</p>
           ) : (
-            items.map((f) => (
+            filteredItems.map((f) => (
               <div key={f.id} className="rounded-lg border border-gray-200 bg-white p-4">
                 <div className="mb-2 text-base font-medium">
                   {f.homepage_url ? (
@@ -296,10 +318,10 @@ export default function DiscoveredPage() {
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr><td colSpan={7} className="px-4 py-6"><Spinner /></td></tr>
-              ) : items.length === 0 ? (
+              ) : filteredItems.length === 0 ? (
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">データがありません</td></tr>
               ) : (
-                items.map((f) => (
+                filteredItems.map((f) => (
                   <tr key={f.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium">
                       {f.homepage_url ? (

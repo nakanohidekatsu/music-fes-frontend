@@ -35,7 +35,6 @@ const INITIAL: FormState = {
 
 function validate(form: FormState): FormErrors {
   const errors: FormErrors = {};
-  const today = new Date().toISOString().slice(0, 10);
   const oneYearLater = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
   if (!form.event_name.trim()) {
@@ -46,8 +45,6 @@ function validate(form: FormState): FormErrors {
 
   if (!form.event_date) {
     errors.event_date = '開催日を入力してください';
-  } else if (form.event_date < today) {
-    errors.event_date = '開催日は今日以降の日付を入力してください';
   } else if (form.event_date > oneYearLater) {
     errors.event_date = '開催日は1年以内の日付を入力してください';
   }

@@ -28,7 +28,7 @@ type NewsItem = {
 };
 
 function NewsSection({ newsItems, onFestivalClick }: { newsItems: NewsItem[]; onFestivalClick: (id: string) => void }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
 
   if (newsItems.length === 0) return null;
 

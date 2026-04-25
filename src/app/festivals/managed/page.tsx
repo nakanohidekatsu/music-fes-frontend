@@ -14,11 +14,11 @@ const LIMIT = 50;
 type SortKey = 'event_date' | 'application_deadline' | 'event_name';
 type Order = 'asc' | 'desc';
 
-function isWithinLastMonth(dateStr: string): boolean {
+function isWithinLastTwoWeeks(dateStr: string): boolean {
   const date = new Date(dateStr);
   const now = new Date();
-  const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-  return date >= oneMonthAgo;
+  const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+  return date >= twoWeeksAgo;
 }
 
 type NewsItem = {
@@ -34,6 +34,7 @@ function NewsSection({ newsItems, onFestivalClick }: { newsItems: NewsItem[]; on
 
   return (
     <div className="mb-5 rounded-lg border border-sky-200 bg-sky-50">
+      {/* ヘッダー */}
       <div
         className="flex cursor-pointer items-center justify-between px-4 py-3"
         onClick={() => setCollapsed((c) => !c)}
@@ -49,7 +50,7 @@ function NewsSection({ newsItems, onFestivalClick }: { newsItems: NewsItem[]; on
           <span className="rounded-full bg-sky-500 px-2 py-0.5 text-xs font-medium text-white">
             {newsItems.length}
           </span>
-          <span className="text-xs text-sky-500">直近1ヶ月の更新情報</span>
+          <span className="text-xs text-sky-500">直近2週間の更新情報</span>
         </div>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -72,34 +73,32 @@ function NewsSection({ newsItems, onFestivalClick }: { newsItems: NewsItem[]; on
             return (
               <li
                 key={`${f.id}-${item.type}`}
-                className="flex cursor-pointer items-center gap-3 px-4 py-2 hover:bg-sky-100"
+                className="cursor-pointer px-4 py-2.5 hover:bg-sky-100"
                 onClick={() => onFestivalClick(f.id)}
               >
-                <span
-                  className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${
-                    item.type === 'new'
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-amber-100 text-amber-700'
-                  }`}
-                >
-                  {item.type === 'new' ? '新着' : '更新'}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-sm text-gray-800">{f.event_name}</span>
-                <div className="flex shrink-0 items-center gap-1">
-                  {f.application_status !== '未設定' && (
-                    <Badge value={f.application_status} />
-                  )}
-                  {f.result_status !== '未設定' && (
-                    <Badge value={f.result_status} />
-                  )}
-                  {f.participation_status !== '未設定' && (
-                    <Badge value={f.participation_status} />
-                  )}
-                  {f.participated && (
-                    <span className="text-xs font-medium text-green-600">✓参加済</span>
-                  )}
+                {/* 1行目: バッジ + イベント名 + 日付 */}
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${
+                      item.type === 'new'
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-amber-100 text-amber-700'
+                    }`}
+                  >
+                    {item.type === 'new' ? '新着' : '更新'}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-800">{f.event_name}</span>
+                  <span className="shrink-0 text-xs text-gray-400">{item.date.slice(0, 10)}</span>
                 </div>
-                <span className="shrink-0 text-xs text-gray-400">{item.date.slice(0, 10)}</span>
+                {/* 2行目: ステータスバッジ（未設定以外のみ） */}
+                {(f.application_status !== '未設定' || f.result_status !== '未設定' || f.participation_status !== '未設定' || f.participated) && (
+                  <div className="mt-1 flex flex-wrap items-center gap-1 pl-1">
+                    {f.application_status !== '未設定' && <Badge value={f.application_status} />}
+                    {f.result_status !== '未設定' && <Badge value={f.result_status} />}
+                    {f.participation_status !== '未設定' && <Badge value={f.participation_status} />}
+                    {f.participated && <span className="text-xs font-medium text-green-600">✓参加済</span>}
+                  </div>
+                )}
               </li>
             );
           })}
@@ -156,9 +155,9 @@ export default function ManagedPage() {
         if (!cancelled) {
           const news: NewsItem[] = [];
           for (const f of res.items) {
-            const isNew = isWithinLastMonth(f.created_at);
+            const isNew = isWithinLastTwoWeeks(f.created_at);
             const isUpdated =
-              !isNew && isWithinLastMonth(f.updated_at) && f.updated_at !== f.created_at;
+              !isNew && isWithinLastTwoWeeks(f.updated_at) && f.updated_at !== f.created_at;
             if (isNew) {
               news.push({ festival: f, type: 'new', date: f.created_at });
             } else if (isUpdated) {

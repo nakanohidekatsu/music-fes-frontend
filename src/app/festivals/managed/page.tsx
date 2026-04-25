@@ -67,25 +67,42 @@ function NewsSection({ newsItems, onFestivalClick }: { newsItems: NewsItem[]; on
 
       {!collapsed && (
         <ul className="divide-y divide-sky-100 border-t border-sky-200">
-          {newsItems.map((item) => (
-            <li
-              key={`${item.festival.id}-${item.type}`}
-              className="flex cursor-pointer items-center gap-3 px-4 py-2.5 hover:bg-sky-100"
-              onClick={() => onFestivalClick(item.festival.id)}
-            >
-              <span
-                className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${
-                  item.type === 'new'
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : 'bg-amber-100 text-amber-700'
-                }`}
+          {newsItems.map((item) => {
+            const f = item.festival;
+            return (
+              <li
+                key={`${f.id}-${item.type}`}
+                className="flex cursor-pointer items-center gap-3 px-4 py-2 hover:bg-sky-100"
+                onClick={() => onFestivalClick(f.id)}
               >
-                {item.type === 'new' ? '新着' : '更新'}
-              </span>
-              <span className="flex-1 truncate text-sm text-gray-800">{item.festival.event_name}</span>
-              <span className="shrink-0 text-xs text-gray-400">{item.date.slice(0, 10)}</span>
-            </li>
-          ))}
+                <span
+                  className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${
+                    item.type === 'new'
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-amber-100 text-amber-700'
+                  }`}
+                >
+                  {item.type === 'new' ? '新着' : '更新'}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-sm text-gray-800">{f.event_name}</span>
+                <div className="flex shrink-0 items-center gap-1">
+                  {f.application_status !== '未設定' && (
+                    <Badge value={f.application_status} />
+                  )}
+                  {f.result_status !== '未設定' && (
+                    <Badge value={f.result_status} />
+                  )}
+                  {f.participation_status !== '未設定' && (
+                    <Badge value={f.participation_status} />
+                  )}
+                  {f.participated && (
+                    <span className="text-xs font-medium text-green-600">✓参加済</span>
+                  )}
+                </div>
+                <span className="shrink-0 text-xs text-gray-400">{item.date.slice(0, 10)}</span>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

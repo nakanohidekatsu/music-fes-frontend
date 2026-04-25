@@ -14,6 +14,84 @@ const LIMIT = 50;
 type SortKey = 'event_date' | 'application_deadline' | 'event_name';
 type Order = 'asc' | 'desc';
 
+function isWithinLastMonth(dateStr: string): boolean {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+  return date >= oneMonthAgo;
+}
+
+type NewsItem = {
+  festival: MusicFestival;
+  type: 'new' | 'updated';
+  date: string;
+};
+
+function NewsSection({ newsItems, onFestivalClick }: { newsItems: NewsItem[]; onFestivalClick: (id: string) => void }) {
+  const [collapsed, setCollapsed] = useState(false);
+
+  if (newsItems.length === 0) return null;
+
+  return (
+    <div className="mb-5 rounded-lg border border-sky-200 bg-sky-50">
+      <div
+        className="flex cursor-pointer items-center justify-between px-4 py-3"
+        onClick={() => setCollapsed((c) => !c)}
+      >
+        <div className="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+            <path d="M18 14h-8" />
+            <path d="M15 18h-5" />
+            <path d="M10 6h8v4h-8V6Z" />
+          </svg>
+          <span className="text-sm font-semibold text-sky-700">News</span>
+          <span className="rounded-full bg-sky-500 px-2 py-0.5 text-xs font-medium text-white">
+            {newsItems.length}
+          </span>
+          <span className="text-xs text-sky-500">直近1ヶ月の更新情報</span>
+        </div>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className={`h-4 w-4 text-sky-400 transition-transform ${collapsed ? '-rotate-90' : ''}`}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+
+      {!collapsed && (
+        <ul className="divide-y divide-sky-100 border-t border-sky-200">
+          {newsItems.map((item) => (
+            <li
+              key={`${item.festival.id}-${item.type}`}
+              className="flex cursor-pointer items-center gap-3 px-4 py-2.5 hover:bg-sky-100"
+              onClick={() => onFestivalClick(item.festival.id)}
+            >
+              <span
+                className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${
+                  item.type === 'new'
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-amber-100 text-amber-700'
+                }`}
+              >
+                {item.type === 'new' ? '新着' : '更新'}
+              </span>
+              <span className="flex-1 truncate text-sm text-gray-800">{item.festival.event_name}</span>
+              <span className="shrink-0 text-xs text-gray-400">{item.date.slice(0, 10)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 // コンポーネント外で定義してレンダリング中の再生成を防ぐ
 function SortTh({
   label,
@@ -50,6 +128,38 @@ export default function ManagedPage() {
   const [order, setOrder] = useState<Order>('asc');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+
+  // Newsセクション用: 直近1ヶ月の更新情報を一度だけ取得
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get<FestivalPageResponse>(`/festivals/managed?page=1&limit=200&sort_by=event_date&order=asc`)
+      .then((res) => {
+        if (!cancelled) {
+          const news: NewsItem[] = [];
+          for (const f of res.items) {
+            const isNew = isWithinLastMonth(f.created_at);
+            const isUpdated =
+              !isNew && isWithinLastMonth(f.updated_at) && f.updated_at !== f.created_at;
+            if (isNew) {
+              news.push({ festival: f, type: 'new', date: f.created_at });
+            } else if (isUpdated) {
+              news.push({ festival: f, type: 'updated', date: f.updated_at });
+            }
+          }
+          // 新しい順に並べる
+          news.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          setNewsItems(news);
+        }
+      })
+      .catch(() => {
+        // Newsの取得失敗はサイレントに無視
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -102,6 +212,8 @@ export default function ManagedPage() {
   return (
     <div>
       <PageHeader title="Scope" count={total} />
+
+      <NewsSection newsItems={newsItems} onFestivalClick={(id) => router.push(`/festivals/${id}`)} />
 
       {error && <ErrorMessage message={error} />}
 

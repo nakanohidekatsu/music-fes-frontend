@@ -17,8 +17,8 @@ type Order = 'asc' | 'desc';
 function isWithinLastTwoWeeks(dateStr: string): boolean {
   const date = new Date(dateStr);
   const now = new Date();
-  const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-  return date >= twoWeeksAgo;
+  const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+  return date >= oneMonthAgo;
 }
 
 type NewsItem = {
@@ -50,7 +50,7 @@ function NewsSection({ newsItems, onFestivalClick }: { newsItems: NewsItem[]; on
           <span className="rounded-full bg-sky-500 px-2 py-0.5 text-xs font-medium text-white">
             {newsItems.length}
           </span>
-          <span className="text-xs text-sky-500">直近2週間の更新情報</span>
+          <span className="text-xs text-sky-500">直近1ヶ月の更新情報</span>
         </div>
         <svg
           xmlns="http://www.w3.org/2000/svg"

@@ -6,7 +6,13 @@ import { api, ApiError } from '@/lib/api';
 import { Badge } from '@/components/ui/Badge';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Spinner, ErrorMessage } from '@/components/ui/Spinner';
-import type { ApplicationStatus, MusicFestival, ParticipationStatus, ResultStatus } from '@/types';
+import type {
+  ApplicationStatus,
+  MusicFestival,
+  ParticipationResultStatus,
+  ParticipationStatus,
+  ResultStatus,
+} from '@/types';
 
 interface EditForm {
   // 基本情報
@@ -24,7 +30,16 @@ interface EditForm {
   result_status: ResultStatus;
   participation_planned_date: string;
   participation_status: ParticipationStatus;
-  participated: boolean;
+  participation_result_status: ParticipationResultStatus;
+  // 参加詳細（participation_status = '参加可' のフェスで入力）
+  participation_date: string;
+  performance_time: string;
+  play_duration: string;
+  stage_name: string;
+  venue_address: string;
+  participation_fee: string;
+  fee_paid: boolean;
+  music_stand_required: boolean;
   // 備考
   notes: string;
 }
@@ -58,7 +73,16 @@ export default function FestivalDetailPage() {
           result_status: data.result_status,
           participation_planned_date: data.participation_planned_date ?? '',
           participation_status: data.participation_status,
-          participated: data.participated,
+          participation_result_status: data.participation_result_status,
+          participation_date: data.participation_date ?? '',
+          performance_time: data.performance_time ?? '',
+          play_duration: data.play_duration ?? '',
+          stage_name: data.stage_name ?? '',
+          venue_address: data.venue_address ?? '',
+          participation_fee:
+            data.participation_fee !== null ? String(data.participation_fee) : '',
+          fee_paid: data.fee_paid,
+          music_stand_required: data.music_stand_required,
           notes: data.notes ?? '',
         });
       })
@@ -91,7 +115,15 @@ export default function FestivalDetailPage() {
         result_status: form.result_status,
         participation_planned_date: form.participation_planned_date || null,
         participation_status: form.participation_status,
-        participated: form.participated,
+        participation_result_status: form.participation_result_status,
+        participation_date: form.participation_date || null,
+        performance_time: form.performance_time || null,
+        play_duration: form.play_duration || null,
+        stage_name: form.stage_name || null,
+        venue_address: form.venue_address || null,
+        participation_fee: form.participation_fee !== '' ? Number(form.participation_fee) : null,
+        fee_paid: form.fee_paid,
+        music_stand_required: form.music_stand_required,
         notes: form.notes || null,
       });
       router.push('/festivals/managed');
@@ -200,6 +232,7 @@ export default function FestivalDetailPage() {
           <Badge value={form.application_status} />
           <Badge value={form.result_status} />
           <Badge value={form.participation_status} />
+          {form.participation_status === '参加可' && <Badge value={form.participation_result_status} />}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -228,15 +261,80 @@ export default function FestivalDetailPage() {
           />
         </div>
 
-        <label className="mt-4 flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={form.participated}
-            onChange={(e) => setForm({ ...form, participated: e.target.checked })}
-            className="h-4 w-4 rounded border-gray-300"
-          />
-          <span className="font-medium text-gray-700">参加済み</span>
-        </label>
+        {form.participation_status === '参加可' && (
+          <div className="mt-4">
+            <SelectField
+              label="参加済み"
+              value={form.participation_result_status}
+              options={['未定', '参加済み', '未開催']}
+              onChange={(v) =>
+                setForm({ ...form, participation_result_status: v as ParticipationResultStatus })
+              }
+            />
+          </div>
+        )}
+
+        {form.participation_status === '参加可' && (
+          <div className="mt-5 border-t border-gray-100 pt-5">
+            <h3 className="mb-4 text-sm font-semibold text-gray-700">参加詳細</h3>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <DateField
+                label="参加日付"
+                value={form.participation_date}
+                onChange={(v) => setForm({ ...form, participation_date: v })}
+              />
+              <TextField
+                label="出演時間"
+                value={form.performance_time}
+                onChange={(v) => setForm({ ...form, performance_time: v })}
+              />
+              <TextField
+                label="演奏時間"
+                value={form.play_duration}
+                onChange={(v) => setForm({ ...form, play_duration: v })}
+              />
+              <TextField
+                label="参加ステージ名"
+                value={form.stage_name}
+                onChange={(v) => setForm({ ...form, stage_name: v })}
+              />
+              <div className="sm:col-span-2">
+                <TextField
+                  label="住所"
+                  value={form.venue_address}
+                  onChange={(v) => setForm({ ...form, venue_address: v })}
+                />
+              </div>
+              <TextField
+                label="参加費用（合計）"
+                type="number"
+                value={form.participation_fee}
+                onChange={(v) => setForm({ ...form, participation_fee: v })}
+              />
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-6">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={form.fee_paid}
+                  onChange={(e) => setForm({ ...form, fee_paid: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <span className="font-medium text-gray-700">支払済</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={form.music_stand_required}
+                  onChange={(e) => setForm({ ...form, music_stand_required: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <span className="font-medium text-gray-700">譜面台要否</span>
+              </label>
+            </div>
+          </div>
+        )}
 
         <div className="mt-5">
           <label className="mb-1 block text-sm font-medium text-gray-700">備考</label>
@@ -305,16 +403,18 @@ function TextField({
   label,
   value,
   onChange,
+  type = 'text',
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  type?: 'text' | 'number';
 }) {
   return (
     <div>
       <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
       <input
-        type="text"
+        type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-600 focus:border-sky-400 focus:outline-none"

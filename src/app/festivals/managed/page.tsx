@@ -91,12 +91,12 @@ function NewsSection({ newsItems, onFestivalClick }: { newsItems: NewsItem[]; on
                   <span className="shrink-0 text-xs text-gray-400">{item.date.slice(0, 10)}</span>
                 </div>
                 {/* 2行目: ステータスバッジ（未設定以外のみ） */}
-                {(f.application_status !== '未設定' || f.result_status !== '未設定' || f.participation_status !== '未設定' || f.participated) && (
+                {(f.application_status !== '未設定' || f.result_status !== '未設定' || f.participation_status !== '未設定' || f.participation_result_status !== '未定') && (
                   <div className="mt-1 flex flex-wrap items-center gap-1 pl-1">
                     {f.application_status !== '未設定' && <Badge value={f.application_status} />}
                     {f.result_status !== '未設定' && <Badge value={f.result_status} />}
                     {f.participation_status !== '未設定' && <Badge value={f.participation_status} />}
-                    {f.participated && <span className="text-xs font-medium text-green-600">✓参加済</span>}
+                    {f.participation_result_status !== '未定' && <Badge value={f.participation_result_status} />}
                   </div>
                 )}
               </li>
@@ -272,7 +272,7 @@ export default function ManagedPage() {
                   <Badge value={f.application_status} />
                   <Badge value={f.result_status} />
                   <Badge value={f.participation_status} />
-                  {f.participated && <span className="text-xs font-medium text-green-600">✓ 参加済み</span>}
+                  {f.participation_result_status !== '未定' && <Badge value={f.participation_result_status} />}
                 </div>
               </div>
             ))
@@ -319,7 +319,13 @@ export default function ManagedPage() {
                     <td className="px-4 py-3"><Badge value={f.application_status} /></td>
                     <td className="px-4 py-3"><Badge value={f.result_status} /></td>
                     <td className="px-4 py-3"><Badge value={f.participation_status} /></td>
-                    <td className="px-4 py-3 text-center text-gray-500">{f.participated ? '✓' : '—'}</td>
+                    <td className="px-4 py-3 text-center">
+                      {f.participation_result_status !== '未定' ? (
+                        <Badge value={f.participation_result_status} />
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
+                    </td>
                   </tr>
                 ))
               )}

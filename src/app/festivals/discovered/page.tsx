@@ -60,6 +60,7 @@ export default function DiscoveredPage() {
   const [collectResult, setCollectResult] = useState<CollectResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [pageInput, setPageInput] = useState('1');
   const { isMobile } = useViewMode();
 
   useEffect(() => {
@@ -137,6 +138,20 @@ export default function DiscoveredPage() {
     }
   }
 
+  async function handleDelete(festival: MusicFestival) {
+    if (!window.confirm(`「${festival.event_name}」を削除しますか？この操作は取り消せません。`)) {
+      return;
+    }
+    setError('');
+    try {
+      await api.delete(`/festivals/${festival.id}`);
+      setItems((prev) => prev.filter((f) => f.id !== festival.id));
+      setTotal((prev) => prev - 1);
+    } catch {
+      setError('削除に失敗しました');
+    }
+  }
+
   function handleSort(key: SortKey) {
     setLoading(true);
     setError('');
@@ -156,6 +171,19 @@ export default function DiscoveredPage() {
   }
 
   const totalPages = Math.ceil(total / LIMIT);
+
+  useEffect(() => {
+    setPageInput(String(page));
+  }, [page]);
+
+  function handlePageInputSubmit() {
+    const next = Number(pageInput);
+    if (!Number.isInteger(next) || next < 1 || next > totalPages) {
+      setPageInput(String(page));
+      return;
+    }
+    goToPage(next);
+  }
 
   return (
     <div>
@@ -284,16 +312,24 @@ export default function DiscoveredPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-400">管理対象</span>
-                  <button
-                    onClick={() => toggleManaged(f)}
-                    className={`rounded px-2 py-0.5 text-xs font-medium transition-colors ${
-                      f.is_managed
-                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                    }`}
-                  >
-                    {f.is_managed ? 'ON' : 'OFF'}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => toggleManaged(f)}
+                      className={`rounded px-2 py-0.5 text-xs font-medium transition-colors ${
+                        f.is_managed
+                          ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      }`}
+                    >
+                      {f.is_managed ? 'ON' : 'OFF'}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(f)}
+                      className="rounded px-2 py-0.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                    >
+                      削除
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
@@ -312,13 +348,14 @@ export default function DiscoveredPage() {
                 <th className="px-4 py-3 text-left">市町村</th>
                 <th className="px-4 py-3 text-left">応募期限</th>
                 <th className="px-4 py-3 text-center">管理対象</th>
+                <th className="px-4 py-3 text-center">削除</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {loading ? (
-                <tr><td colSpan={7} className="px-4 py-6"><Spinner /></td></tr>
+                <tr><td colSpan={8} className="px-4 py-6"><Spinner /></td></tr>
               ) : items.length === 0 ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">データがありません</td></tr>
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">データがありません</td></tr>
               ) : (
                 items.map((f) => (
                   <tr key={f.id} className="hover:bg-gray-50">
@@ -346,6 +383,14 @@ export default function DiscoveredPage() {
                         }`}
                       >
                         {f.is_managed ? 'ON' : 'OFF'}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={() => handleDelete(f)}
+                        className="rounded px-2 py-0.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                      >
+                        削除
                       </button>
                     </td>
                   </tr>
@@ -399,6 +444,29 @@ export default function DiscoveredPage() {
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
+          <div className="ml-2 flex items-center gap-1.5">
+            <label htmlFor="page-jump" className="text-gray-500">
+              ページ指定
+            </label>
+            <input
+              id="page-jump"
+              type="number"
+              min={1}
+              max={totalPages}
+              value={pageInput}
+              onChange={(e) => setPageInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handlePageInputSubmit();
+              }}
+              className="w-16 rounded border border-gray-300 px-2 py-1 text-center focus:border-sky-400 focus:outline-none"
+            />
+            <button
+              onClick={handlePageInputSubmit}
+              className="rounded border border-gray-300 px-2 py-1 hover:bg-gray-50"
+            >
+              移動
+            </button>
+          </div>
         </div>
       )}
     </div>

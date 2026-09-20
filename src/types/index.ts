@@ -1,6 +1,7 @@
 export type ApplicationStatus = '未設定' | '応募済' | '応募見送り';
 export type ResultStatus = '未設定' | '合格' | '不合格' | '保留';
 export type ParticipationStatus = '未設定' | '参加可' | '参加不可';
+export type ParticipationResultStatus = '未定' | '参加済み' | '未開催';
 export type SourceType = 'auto' | 'manual';
 
 export interface MusicFestival {
@@ -19,7 +20,16 @@ export interface MusicFestival {
   result_status: ResultStatus;
   participation_planned_date: string | null;
   participation_status: ParticipationStatus;
-  participated: boolean;
+  participation_result_status: ParticipationResultStatus;
+  // 参加詳細（participation_status = '参加可' のフェスで入力）
+  participation_date: string | null;
+  performance_time: string | null;
+  play_duration: string | null;
+  stage_name: string | null;
+  venue_address: string | null;
+  participation_fee: number | null;
+  fee_paid: boolean;
+  music_stand_required: boolean;
   notes: string | null;
   source_type: SourceType;
   created_by: string | null;

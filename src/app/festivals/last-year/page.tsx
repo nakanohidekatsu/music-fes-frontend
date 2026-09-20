@@ -40,12 +40,15 @@ function SortTh({
   );
 }
 
+const YEAR_OPTIONS = [1, 3, 5] as const;
+
 export default function LastYearPage() {
   const router = useRouter();
   const { isMobile } = useViewMode();
   const [items, setItems] = useState<MusicFestival[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [years, setYears] = useState<number>(1);
   const [sortBy, setSortBy] = useState<SortKey>('event_date');
   const [order, setOrder] = useState<Order>('asc');
   const [loading, setLoading] = useState(true);
@@ -55,7 +58,7 @@ export default function LastYearPage() {
     let cancelled = false;
     api
       .get<FestivalPageResponse>(
-        `/festivals/last_year?page=${page}&limit=${LIMIT}&sort_by=${sortBy}&order=${order}`,
+        `/festivals/last_year?years=${years}&page=${page}&limit=${LIMIT}&sort_by=${sortBy}&order=${order}`,
       )
       .then((res) => {
         if (!cancelled) {
@@ -77,7 +80,14 @@ export default function LastYearPage() {
     return () => {
       cancelled = true;
     };
-  }, [page, sortBy, order, router]);
+  }, [page, years, sortBy, order, router]);
+
+  function handleYearsChange(next: number) {
+    setLoading(true);
+    setError('');
+    setYears(next);
+    setPage(1);
+  }
 
   function handleSort(key: SortKey) {
     setLoading(true);
@@ -102,6 +112,22 @@ export default function LastYearPage() {
   return (
     <div>
       <PageHeader title="LastYear" count={total} />
+
+      <div className="mb-4 flex gap-2">
+        {YEAR_OPTIONS.map((y) => (
+          <button
+            key={y}
+            onClick={() => handleYearsChange(y)}
+            className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
+              years === y
+                ? 'bg-sky-400 text-white'
+                : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            過去{y}年間
+          </button>
+        ))}
+      </div>
 
       {error && <ErrorMessage message={error} />}
 
@@ -144,7 +170,7 @@ export default function LastYearPage() {
                   <Badge value={f.application_status} />
                   <Badge value={f.result_status} />
                   <Badge value={f.participation_status} />
-                  {f.participated && <span className="text-xs font-medium text-green-600">✓ 参加済み</span>}
+                  {f.participation_result_status !== '未定' && <Badge value={f.participation_result_status} />}
                 </div>
               </div>
             ))
@@ -191,7 +217,13 @@ export default function LastYearPage() {
                     <td className="px-4 py-3"><Badge value={f.application_status} /></td>
                     <td className="px-4 py-3"><Badge value={f.result_status} /></td>
                     <td className="px-4 py-3"><Badge value={f.participation_status} /></td>
-                    <td className="px-4 py-3 text-center text-gray-500">{f.participated ? '✓' : '—'}</td>
+                    <td className="px-4 py-3 text-center">
+                      {f.participation_result_status !== '未定' ? (
+                        <Badge value={f.participation_result_status} />
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
+                    </td>
                   </tr>
                 ))
               )}

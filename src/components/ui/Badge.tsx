@@ -7,6 +7,9 @@ const colorMap: Record<string, string> = {
   保留: 'bg-orange-100 text-orange-700',
   参加可: 'bg-green-100 text-green-700',
   参加不可: 'bg-red-100 text-red-700',
+  未定: 'bg-gray-100 text-gray-500',
+  参加済み: 'bg-green-100 text-green-700',
+  未開催: 'bg-blue-100 text-blue-700',
 };
 
 export function Badge({ value }: { value: string }) {

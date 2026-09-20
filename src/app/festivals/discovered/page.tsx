@@ -61,6 +61,8 @@ export default function DiscoveredPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [pageInput, setPageInput] = useState('1');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const { isMobile } = useViewMode();
 
   useEffect(() => {
@@ -83,6 +85,7 @@ export default function DiscoveredPage() {
           setItems(res.items);
           setTotal(res.total);
           setLoading(false);
+          setSelectedIds(new Set());
         }
       })
       .catch((err) => {
@@ -147,8 +150,51 @@ export default function DiscoveredPage() {
       await api.delete(`/festivals/${festival.id}`);
       setItems((prev) => prev.filter((f) => f.id !== festival.id));
       setTotal((prev) => prev - 1);
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(festival.id);
+        return next;
+      });
     } catch {
       setError('削除に失敗しました');
+    }
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    setSelectedIds((prev) =>
+      prev.size === items.length ? new Set() : new Set(items.map((f) => f.id)),
+    );
+  }
+
+  async function handleBulkDelete() {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`選択した ${selectedIds.size} 件を削除しますか？この操作は取り消せません。`)) {
+      return;
+    }
+    setError('');
+    setBulkDeleting(true);
+    try {
+      const ids = Array.from(selectedIds);
+      await api.post<{ deleted_count: number }>('/festivals/bulk-delete', { ids });
+      setItems((prev) => prev.filter((f) => !selectedIds.has(f.id)));
+      setTotal((prev) => prev - ids.length);
+      setSelectedIds(new Set());
+    } catch {
+      setError('一括削除に失敗しました');
+    } finally {
+      setBulkDeleting(false);
     }
   }
 
@@ -270,6 +316,27 @@ export default function DiscoveredPage() {
         />
       </div>
 
+      {selectedIds.size > 0 && (
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm">
+          <span className="font-medium text-red-700">{selectedIds.size} 件選択中</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="rounded px-2 py-1 text-gray-600 hover:bg-white"
+            >
+              選択解除
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+              className="flex items-center gap-1.5 rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {bulkDeleting ? '削除中...' : '選択項目を削除'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {error && <ErrorMessage message={error} />}
 
       {collectResult && (
@@ -294,14 +361,22 @@ export default function DiscoveredPage() {
           ) : (
             items.map((f) => (
               <div key={f.id} className="rounded-lg border border-gray-200 bg-white p-4">
-                <div className="mb-2 text-base font-medium">
-                  {f.homepage_url ? (
-                    <a href={f.homepage_url} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">
-                      {f.event_name}
-                    </a>
-                  ) : (
-                    <span className="text-gray-800">{f.event_name}</span>
-                  )}
+                <div className="mb-2 flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(f.id)}
+                    onChange={() => toggleSelected(f.id)}
+                    className="mt-1 h-4 w-4 shrink-0 rounded border-gray-300"
+                  />
+                  <div className="text-base font-medium">
+                    {f.homepage_url ? (
+                      <a href={f.homepage_url} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">
+                        {f.event_name}
+                      </a>
+                    ) : (
+                      <span className="text-gray-800">{f.event_name}</span>
+                    )}
+                  </div>
                 </div>
                 <div className="mb-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600">
                   <div><span className="text-xs text-gray-400">収集日</span><br />{f.created_at.slice(0, 10)}</div>
@@ -341,6 +416,14 @@ export default function DiscoveredPage() {
           <table className="min-w-full text-sm">
             <thead className="border-b border-gray-200 bg-gray-50 text-xs text-gray-500">
               <tr>
+                <th className="px-4 py-3 text-center">
+                  <input
+                    type="checkbox"
+                    checked={items.length > 0 && selectedIds.size === items.length}
+                    onChange={toggleSelectAll}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                </th>
                 <th className="px-4 py-3 text-left">イベント名</th>
                 <SortTh label="収集日" col="created_at" currentSort={sortBy} currentOrder={order} onSort={handleSort} />
                 <SortTh label="開催日" col="event_date" currentSort={sortBy} currentOrder={order} onSort={handleSort} />
@@ -353,12 +436,20 @@ export default function DiscoveredPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {loading ? (
-                <tr><td colSpan={8} className="px-4 py-6"><Spinner /></td></tr>
+                <tr><td colSpan={9} className="px-4 py-6"><Spinner /></td></tr>
               ) : items.length === 0 ? (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">データがありません</td></tr>
+                <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400">データがありません</td></tr>
               ) : (
                 items.map((f) => (
                   <tr key={f.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(f.id)}
+                        onChange={() => toggleSelected(f.id)}
+                        className="h-4 w-4 rounded border-gray-300"
+                      />
+                    </td>
                     <td className="px-4 py-3 font-medium">
                       {f.homepage_url ? (
                         <a href={f.homepage_url} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">

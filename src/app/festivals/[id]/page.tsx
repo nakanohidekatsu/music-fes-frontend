@@ -375,7 +375,7 @@ export default function FestivalDetailPage() {
                   onChange={(e) => setForm({ ...form, music_stand_required: e.target.checked })}
                   className="h-4 w-4 rounded border-gray-300"
                 />
-                <span className="font-medium text-gray-700">譜面台要否</span>
+                <span className="font-medium text-gray-700">譜面台要</span>
               </label>
             </div>
           </div>

@@ -29,6 +29,7 @@ export interface MusicFestival {
   venue_address: string | null;
   participation_fee: number | null;
   fee_paid: boolean;
+  fee_collected: boolean;
   music_stand_required: boolean;
   notes: string | null;
   source_type: SourceType;

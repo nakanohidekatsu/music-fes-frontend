@@ -39,6 +39,7 @@ interface EditForm {
   venue_address: string;
   participation_fee: string;
   fee_paid: boolean;
+  fee_collected: boolean;
   music_stand_required: boolean;
   // 備考
   notes: string;
@@ -82,6 +83,7 @@ export default function FestivalDetailPage() {
           participation_fee:
             data.participation_fee !== null ? String(data.participation_fee) : '',
           fee_paid: data.fee_paid,
+          fee_collected: data.fee_collected,
           music_stand_required: data.music_stand_required,
           notes: data.notes ?? '',
         });
@@ -123,6 +125,7 @@ export default function FestivalDetailPage() {
         venue_address: form.venue_address || null,
         participation_fee: form.participation_fee !== '' ? Number(form.participation_fee) : null,
         fee_paid: form.fee_paid,
+        fee_collected: form.fee_collected,
         music_stand_required: form.music_stand_required,
         notes: form.notes || null,
       });
@@ -299,11 +302,44 @@ export default function FestivalDetailPage() {
                 onChange={(v) => setForm({ ...form, stage_name: v })}
               />
               <div className="sm:col-span-2">
-                <TextField
-                  label="住所"
-                  value={form.venue_address}
-                  onChange={(v) => setForm({ ...form, venue_address: v })}
-                />
+                <label className="mb-1 block text-sm font-medium text-gray-700">住所</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={form.venue_address}
+                    onChange={(e) => setForm({ ...form, venue_address: e.target.value })}
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-600 focus:border-sky-400 focus:outline-none"
+                  />
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(form.venue_address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => {
+                      if (!form.venue_address.trim()) e.preventDefault();
+                    }}
+                    aria-disabled={!form.venue_address.trim()}
+                    className={`flex shrink-0 items-center gap-1 rounded border px-3 py-2 text-sm font-medium ${
+                      form.venue_address.trim()
+                        ? 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                        : 'cursor-not-allowed border-gray-200 text-gray-300'
+                    }`}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    地図
+                  </a>
+                </div>
               </div>
               <TextField
                 label="参加費用（合計）"
@@ -322,6 +358,15 @@ export default function FestivalDetailPage() {
                   className="h-4 w-4 rounded border-gray-300"
                 />
                 <span className="font-medium text-gray-700">支払済</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={form.fee_collected}
+                  onChange={(e) => setForm({ ...form, fee_collected: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <span className="font-medium text-gray-700">集金済み</span>
               </label>
               <label className="flex items-center gap-2 text-sm">
                 <input
